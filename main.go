@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"os"
 )
 
 
@@ -12,9 +13,20 @@ func main() {
 	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 	defer resp.Body.Close()
-	if data, err := ioutil.ReadAll(resp.Body);err == nil {
-		ioutil.WriteFile("测试文件.pdf", data, 0644)
+	tmpFile, err := os.Create("测试文件.pdf.tmp")
+	if err != nil {
+		tmpFile.Close()
+		fmt.Println(err)
+		return
 	}
+	if _, err:=io.Copy(tmpFile, resp.Body);err != nil {
+		fmt.Println(err)
+		tmpFile.Close()
+		return
+	}
+	os.Rename("测试文件.pdf.tmp", "测试文件.pdf")
+
 }
